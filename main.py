@@ -179,4 +179,11 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(check_reminders, 'interval', minutes=1)
 scheduler.start()
 
-bot.polling()
+if __name__ == '__main__':
+    while True:
+        try:
+            print('Бот запущен...')
+            bot.polling(non_stop=True, interval=0, timeout=20)
+        except Exception as e:
+            print(f'Ошибка подключения: {e}')
+            time.sleep(5)

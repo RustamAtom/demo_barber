@@ -33,6 +33,23 @@ def start_admin(message):
         bot.send_message(ADMIN_ID, '🏠Главное меню АДМИНА', reply_markup=markup)
     else:
         start(message)
+@bot.callback_query_handler(func=lambda call: call.data.startswith('setday_'))
+def admin_setday(call):
+    day = call.data.split('_')[1]
+    user_data[call.message.chat.id] = {'admin_day': day}
+    
+    msg = bot.send_message(ADMIN_ID, f'🕰️Введите свободные окошки для {day}\nНапример: <b>14:00</b>', parse_mode='HTML')
+    bot.register_next_step_handler(msg, admin_save_time)
+    
+    def admin_save_time(message):
+        day = user_data[message.chat.id]['admin_day']
+        time = message.text
+        database.add_slot(day=day, time=time)
+        
+        markup = types.InlineKeyboardMarkup()
+        markup.add(types.InlineKeyboardButton('➕Добавить ещё окошко', callback_data='add_okoshki'))
+        
+        bot.send_message(ADMIN_ID, f'✅Окошко {day} в {time} добавлено', reply_markup=markup)
 @bot.callback_query_handler(func=lambda call: True)
 def callback(call):
     def ask_phone(message):
@@ -146,23 +163,6 @@ def callback(call):
             bot.register_next_step_handler(msg, send_broadcast_messages)
     elif call.data == 'home':
         start(call.message)
-@bot.callback_query_handler(func=lambda call: call.data.startswith('setday_'))
-def admin_setday(call):
-    day = call.data.split('_')[1]
-    user_data[call.message.chat.id] = {'admin_day': day}
-    
-    msg = bot.send_message(ADMIN_ID, f'🕰️Введите свободные окошки для {day}\nНапример: <b>14:00</b>', parse_mode='HTML')
-    bot.register_next_step_handler(msg, admin_save_time)
-    
-    def admin_save_time(message):
-        day = user_data[message.chat.id]['admin_day']
-        time = message.text
-        database.add_slot(day=day, time=time)
-        
-        markup = types.InlineKeyboardMarkup()
-        markup.add(types.InlineKeyboardButton('➕Добавить ещё окошко', callback_data='add_okoshki'))
-        
-        bot.send_message(ADMIN_ID, f'✅Окошко {day} в {time} добавлено', reply_markup=markup)
 
 def check_reminders():
     reminder_time = (datetime.now() + timedelta(hours=2)).strftime('%H%M')

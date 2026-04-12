@@ -23,7 +23,7 @@ def start(message):
         start_admin(message)
 def start_admin(message):
     if message.chat.id == ADMIN_ID:
-        markup = types.InlineKeyboardMarkup()
+        markup = types.InlineKeyboardMarkup(row_width=1)
         btn1 = types.InlineKeyboardButton('📝Список клиентов', callback_data='spisok')
         btn2 = types.InlineKeyboardButton('📅Добавить свободные окошки', callback_data='add_okoshki')
         btn3 = types.InlineKeyboardButton('📢Сделать рассылку', callback_data='rassylka')

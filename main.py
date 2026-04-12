@@ -12,6 +12,15 @@ ADMIN_ID = 5068250115
 bot = telebot.TeleBot(TOKEN)
 
 user_data = {}
+def admin_save_time(message):
+    day = user_data[message.chat.id]['admin_day']
+    time = message.text
+    database.add_slot(day=day, time=time)
+          
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    markup.add(types.InlineKeyboardButton('➕Добавить ещё окошко', callback_data='add_okoshki'), types.InlineKeyboardButton('🏠Главное меню', callback_data='home'))
+    bot.send_message(ADMIN_ID, '✅Окошко добавлено', reply_markup=markup)
+
 @bot.message_handler(commands=['start'])
 def start(message):
     if message.chat.id != ADMIN_ID:
@@ -170,15 +179,6 @@ def callback(call):
         
         msg = bot.send_message(ADMIN_ID, f'🕰️Введите свободные окошки для {day}\nНапример: <b>14:00</b>', parse_mode='HTML')
         bot.register_next_step_handler(msg, admin_save_time)
-        
-        def admin_save_time(message):
-            day = user_data[message.chat.id]['admin_day']
-            time = message.text
-            database.add_slot(day=day, time=time)
-            
-            markup = types.InlineKeyboardMarkup(row_width=1)
-            markup.add(types.InlineKeyboardButton('➕Добавить ещё окошко', callback_data='add_okoshki'), types.InlineKeyboardButton('🏠Главное меню', callback_data='home'))
-            bot.send_message(ADMIN_ID, '✅Окошко добавлено', reply_markup=markup)
         
 def check_reminders():
     reminder_time = (datetime.now() + timedelta(hours=2)).strftime('%H%M')

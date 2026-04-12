@@ -27,7 +27,7 @@ def start_admin(message):
         btn1 = types.InlineKeyboardButton('📝Список клиентов', callback_data='spisok')
         btn2 = types.InlineKeyboardButton('📅Добавить свободные окошки', callback_data='add_okoshki')
         btn3 = types.InlineKeyboardButton('📢Сделать рассылку', callback_data='rassylka')
-        markup.add(btn1, btn2)
+        markup.add(btn1, btn2, btn3)
         bot.send_message(ADMIN_ID, '🏠Главное меню АДМИНА', reply_markup=markup)
     else:
         start(message)
@@ -137,7 +137,7 @@ def callback(call):
         btn3 = types.InlineKeyboardButton(f'На послезавтра ({d3})', callback_data=f'setday_{d3}')
 
         markup.add(btn1, btn2, btn3)
-        bot.send_message(ADMIN_ID, '❓На какой день добавить окошко?')
+        bot.send_message(ADMIN_ID, '❓На какой день добавить окошко?', reply_markup=markup)
     elif call.data == 'rassylka':
         if call.message.chat.id == ADMIN_ID:
             msg = bot.send_message(call.message.chat.id, '👇Введите текст рассылки одним сообщением: ')

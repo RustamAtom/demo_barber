@@ -117,14 +117,6 @@ def callback(call):
         markup = types.InlineKeyboardMarkup()
         markup.add(types.InlineKeyboardButton('🏠Главное меню', callback_data='home'))
         bot.send_message(ADMIN_ID, f'✅Рассылка завершена!\nПолучили <b>{count}</b> человек', parse_mode='HTML', reply_markup=markup)
-    def admin_save_time(message):
-        day = user_data[message.chat.id]['admin_day']
-        time = str(message.text)
-        database.add_slot(day=day, time=time)
-            
-        markup = types.InlineKeyboardMarkup(row_width=1)
-        markup.add(types.InlineKeyboardButton('➕Добавить ещё окошко', callback_data='add_okoshki'), types.InlineKeyboardButton('🏠Главное меню', callback_data='home'))
-        bot.send_message(ADMIN_ID, '✅Окошко добавлено', reply_markup=markup)
     
     if call.data == 'start_zayvka':
         msg = bot.send_message(call.message.chat.id, "👤Введите ваше имя\nНапример: <b>Олег</b>", parse_mode='HTML')
@@ -160,8 +152,23 @@ def callback(call):
     elif call.data.startswith('setday_'):
         day = call.data.split('_')[1]
         user_data[call.message.chat.id] = {'admin_day': day}
+        print(f"[DEBUG] setday сработал, day={day}, chat_id={call.message.chat.id}")
         
-        msg = bot.send_message(ADMIN_ID, f'🕰️Введите свободные окошки для {day}\nНапример: <b>14:00</b>', parse_mode='HTML')
+        def admin_save_time(message):
+            print(f"[DEBUG] admin_save_time вызван, chat_id={message.chat.id}, text={message.text}")
+            day = user_data[message.chat.id]['admin_day']
+            slot_time = message.text
+            database.add_slot(day=day, time=slot_time)
+            
+            markup = types.InlineKeyboardMarkup(row_width=1)
+            markup.add(
+                types.InlineKeyboardButton('➕Добавить ещё окошко', callback_data='add_okoshki'),
+                types.InlineKeyboardButton('🏠Главное меню', callback_data='home')
+            )
+            bot.send_message(ADMIN_ID, '✅Окошко добавлено', reply_markup=markup)
+        
+        msg = bot.send_message(ADMIN_ID, f'🕰Введите свободные окошки для {day}\nНапример: <b>14:00</b>', parse_mode='HTML')
+        print(f"[DEBUG] register_next_step_handler вызван для msg.id={msg.message_id}")
         bot.register_next_step_handler(msg, admin_save_time)
         
 def check_reminders():

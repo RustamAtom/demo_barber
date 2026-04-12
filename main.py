@@ -39,19 +39,34 @@ def start_admin(message):
 def callback(call):
     def ask_phone(message):
                 user_data[message.chat.id] = {"name": message.text}
-                bot.send_message(message.chat.id, "📞Введите номер телефона\nНапример: <b>+79998887766</b>", parse_mode='HTML')
+                
+                markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+                markup.add(types.KeyboardButton('📞Поделиться номером телефона', request_contact=True))
+                
+                bot.send_message(message.chat.id, "📞Поделитесь номером телефона\n📝Или введите номер телефона сами\nНапример: <b>+79998887766</b>", parse_mode='HTML', reply_markup=markup)
                 bot.register_next_step_handler(message, ask_usluga)
     def ask_usluga(message):
-                user_data[message.chat.id]["phone"] = message.text
-                
-                markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True, row_width=2)
-                btn1 = types.KeyboardButton('🎫Услуга|💵Цена: 100')
-                btn2 = types.KeyboardButton('🎫Услуга|💵Цена: 100')
-                btn3 = types.KeyboardButton('🎫Услуга|💵Цена: 100')
-                btn4 = types.KeyboardButton('🎫Услуга|💵Цена: 100')
-                markup.add(btn1, btn2, btn3, btn4)
-                msg = bot.send_message(message.chat.id, '🎫Выбери услугу\n💵Цены предоставлены в рублях', reply_markup=markup)
-                bot.register_next_step_handler(msg, ask_day)
+                if user_data[message.chat.id]["phone"] == message.contact.phone_number:
+                    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True, row_width=2)
+                    btn1 = types.KeyboardButton('🎫Услуга|💵Цена: 100')
+                    btn2 = types.KeyboardButton('🎫Услуга|💵Цена: 100')
+                    btn3 = types.KeyboardButton('🎫Услуга|💵Цена: 100')
+                    btn4 = types.KeyboardButton('🎫Услуга|💵Цена: 100')
+                    markup.add(btn1, btn2, btn3, btn4)
+                    msg = bot.send_message(message.chat.id, '🎫Выбери услугу\n💵Цены предоставлены в рублях', reply_markup=markup)
+                    bot.register_next_step_handler(msg, ask_day)
+                else:
+                    user_data[message.chat.id]["phone"] = message.text
+                    bot.send_message(message.chat.id, '✅Принято', reply_markup=types.ReplyKeyboardRemove())
+                    
+                    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True, row_width=2)
+                    btn1 = types.KeyboardButton('🎫Услуга|💵Цена: 100')
+                    btn2 = types.KeyboardButton('🎫Услуга|💵Цена: 100')
+                    btn3 = types.KeyboardButton('🎫Услуга|💵Цена: 100')
+                    btn4 = types.KeyboardButton('🎫Услуга|💵Цена: 100')
+                    markup.add(btn1, btn2, btn3, btn4)
+                    msg = bot.send_message(message.chat.id, '🎫Выбери услугу\n💵Цены предоставлены в рублях', reply_markup=markup)
+                    bot.register_next_step_handler(msg, ask_day)
     def ask_day(message):
         user_data[message.chat.id]['usluga'] = message.text
         today = datetime.now()
@@ -101,7 +116,7 @@ def callback(call):
         btn = types.InlineKeyboardButton('❌Отменить заявку', callback_data='otmena')
         markup.add(btn)
         bot.send_message(message.chat.id, "Спасибо! Ваша заявка отправлена ✅", reply_markup=markup)
-        bot.send_message(ADMIN_ID, f'🔔У вас новая заявка\n👤Имя: <b>{name}</b>\n📞Номер телефона: <b>{phone}</b>\n🎫Услуга: <b>{usluga}</b>\n📅День: <b>{day}</b>\n🕰️Время: <b>{time}</b>\n🟢Статус: <i>✅Активна</i>', parse_mode='HTML')
+        bot.send_message(ADMIN_ID, f'🔔У вас новая заявка\n👤Имя: <b>{name}</b>\n📞Номер телефона: <b>{phone}</b>\n🎫Услуга: <b>{usluga}</b>\n📅День: <b>{day}</b>\n🕰️Время: <b>{time}</b>\n🟢Статус: <i>✅Активна</i>', parse_mode='HTML', reply_markup=markup)
     def send_broadcast_messages(message):
         users = database.get_all_clients()
         count = 0
@@ -122,12 +137,24 @@ def callback(call):
         msg = bot.send_message(call.message.chat.id, "👤Введите ваше имя\nНапример: <b>Олег</b>", parse_mode='HTML')
         bot.register_next_step_handler(msg, ask_phone)
     elif call.data == 'spisok':
-        bot.send_message(call.message.chat.id, 'Список')
+        clients = database.get_all_zayvki()
+        if clients:
+            bot.send_message(call.message.chat.id, '📝 <b>Список клиентов:</b>', parse_mode='HTML')
+            for user_id, name, phone, usluga, day, time in clients:
+                text = f'👤 <b>{name}</b>\n📞 {phone}\n🎫 {usluga}\n📅 {day} в {time}'
+                markup = types.InlineKeyboardMarkup()
+                markup.add(types.InlineKeyboardButton('❌Отменить заявку', callback_data=f'otmena_{user_id}'))
+                bot.send_message(call.message.chat.id, text, parse_mode='HTML', reply_markup=markup)
+        else:
+            text = '😔 Активных заявок нет'
+            markup = types.InlineKeyboardMarkup()
+            markup.add(types.InlineKeyboardButton('🏠Главное меню', callback_data='home'))
+            bot.send_message(call.message.chat.id, text, parse_mode='HTML', reply_markup=markup)
     elif call.data == 'otmena':
         client = database.get_zayvka(call.message.chat.id)
         if client:
             name, phone, usluga, day, time = client
-            bot.send_message(ADMIN_ID, f'<b>❌ЗАЯВКА ОТМЕНЕНА</b>\n👤Имя: <b>{name}</b>\n📞Номер телефона: <b>{phone}</b>\n🎫Услуга: <b>{usluga}</b>\n📅День: <b>{day}</b>\n🕰️Время: <b>{time}</b>\n🟢Статус: <i>❌Не активна</i>', parse_mode='HTML')
+            bot.send_message(ADMIN_ID, f'<b>❌ЗАЯВКА ОТМЕНЕНА</b>\n👤Имя: <b>{name}</b>\n📞Номер телефона: <b>{phone}</b>\n🎫Услуга: <b>{usluga}</b>\n📅День: <b>{day}</b>\n🕰️Время: <b>{time}</b>\n\n🟢Статус: <i>❌Отменена</i>', parse_mode='HTML')
             bot.send_message(call.message.chat.id, "❌Ваша заявка была отменена")
             database.delete_zayvka(call.message.chat.id)
     elif call.data == 'add_okoshki':
@@ -170,6 +197,21 @@ def callback(call):
         msg = bot.send_message(ADMIN_ID, f'🕰Введите свободные окошки для {day}\nНапример: <b>14:00</b>', parse_mode='HTML')
         print(f"[DEBUG] register_next_step_handler вызван для msg.id={msg.message_id}")
         bot.register_next_step_handler(msg, admin_save_time)
+    elif call.data.startswith('otmena_'):
+        user_id = int(call.data.split('_')[1])
+        client = database.get_zayvka(user_id)
+        if client:
+            name, phone, usluga, day, time = client
+            database.delete_zayvka(user_id)
+            bot.send_message(ADMIN_ID, f'<b>❌ЗАЯВКА ОТМЕНЕНА</b>\n👤 <b>{name}</b>\n📞 {phone}\n🎫 {usluga}\n📅 {day} в {time}', parse_mode='HTML')
+            try:
+                bot.send_message(user_id, '❌ Ваша заявка была отменена администратором')
+            except:
+                pass  # если пользователь заблокировал бота
+            # удаляем сообщение с кнопкой
+            bot.edit_message_reply_markup(call.message.chat.id, call.message.message_id, reply_markup=None)
+            bot.edit_message_text(f'👤 <b>{name}</b>\n📞 {phone}\n🎫 {usluga}\n📅 {day} в {time}\n\n<i>❌ Отменена</i>', 
+                                call.message.chat.id, call.message.message_id, parse_mode='HTML')
         
 def check_reminders():
     reminder_time = (datetime.now() + timedelta(hours=2)).strftime('%H%M')

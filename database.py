@@ -78,3 +78,9 @@ def get_clients_for_reminder(day, time):
         (f'%{day}%', time)
     )
     return cursor.fetchall()
+
+def get_all_zayvki():
+    cursor.execute(
+        "SELECT user_id, name, phone, usluga, day, time FROM clients"
+    )
+    return cursor.fetchall()

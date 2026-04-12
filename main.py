@@ -46,16 +46,16 @@ def callback(call):
                 bot.send_message(message.chat.id, "📞Поделитесь номером телефона\n📝Или введите номер телефона сами\nНапример: <b>+79998887766</b>", parse_mode='HTML', reply_markup=markup)
                 bot.register_next_step_handler(message, ask_usluga)
     def ask_usluga(message):
-                if user_data[message.chat.id]["phone"] == message.contact.phone_number:
-                    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True, row_width=2)
-                    btn1 = types.KeyboardButton('🎫Услуга|💵Цена: 100')
-                    btn2 = types.KeyboardButton('🎫Услуга|💵Цена: 100')
-                    btn3 = types.KeyboardButton('🎫Услуга|💵Цена: 100')
-                    btn4 = types.KeyboardButton('🎫Услуга|💵Цена: 100')
-                    markup.add(btn1, btn2, btn3, btn4)
-                    msg = bot.send_message(message.chat.id, '🎫Выбери услугу\n💵Цены предоставлены в рублях', reply_markup=markup)
-                    bot.register_next_step_handler(msg, ask_day)
-                else:
+                # if user_data[message.chat.id]["phone"] == message.contact.phone_number:
+                #     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True, row_width=2)
+                #     btn1 = types.KeyboardButton('🎫Услуга|💵Цена: 100')
+                #     btn2 = types.KeyboardButton('🎫Услуга|💵Цена: 100')
+                #     btn3 = types.KeyboardButton('🎫Услуга|💵Цена: 100')
+                #     btn4 = types.KeyboardButton('🎫Услуга|💵Цена: 100')
+                #     markup.add(btn1, btn2, btn3, btn4)
+                #     msg = bot.send_message(message.chat.id, '🎫Выбери услугу\n💵Цены предоставлены в рублях', reply_markup=markup)
+                #     bot.register_next_step_handler(msg, ask_day)
+                # else:
                     user_data[message.chat.id]["phone"] = message.text
                     bot.send_message(message.chat.id, '✅Принято', reply_markup=types.ReplyKeyboardRemove())
                     

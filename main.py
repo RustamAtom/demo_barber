@@ -178,7 +178,7 @@ def callback(call):
             
             markup = types.InlineKeyboardMarkup(row_width=1)
             markup.add(types.InlineKeyboardButton('➕Добавить ещё окошко', callback_data='add_okoshki'), types.InlineKeyboardButton('🏠Главное меню', callback_data='home'))
-            bot.send_message(message.chat.id, '✅Окошко добавлено', reply_markup=markup)
+            bot.send_message(ADMIN_ID, '✅Окошко добавлено', reply_markup=markup)
         
 def check_reminders():
     reminder_time = (datetime.now() + timedelta(hours=2)).strftime('%H%M')

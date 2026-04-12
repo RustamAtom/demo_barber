@@ -14,7 +14,7 @@ bot = telebot.TeleBot(TOKEN)
 user_data = {}
 def admin_save_time(message):
     day = user_data[message.chat.id]['admin_day']
-    time = message.text
+    time = str(message.text)
     database.add_slot(day=day, time=time)
           
     markup = types.InlineKeyboardMarkup(row_width=1)

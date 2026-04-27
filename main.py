@@ -44,7 +44,11 @@ def callback(call):
 
     # старт записи
     if call.data == "start_z":
-        msg = bot.send_message(call.message.chat.id, "👤Введите имя:")
+        msg = bot.send_message(
+            call.message.chat.id,
+            "👤Введите ваше имя\nНапример: <i>Олег</i>",
+            parse_mode="HTML",
+        )
         bot.register_next_step_handler(msg, get_name)
 
     # список заявок
@@ -56,7 +60,7 @@ def callback(call):
 
         for c in clients:
             user_id, name, phone, usluga, day, time, status = c
-            text = f"👤Имя: {name} | 📞Номер телефона: {phone}\n🎫Услуга: {usluga}\n📅День: {day}\n🕐Время:{time}\nℹ️Статус: {status}"
+            text = f"👤Имя: {name}\n📞Номер телефона: {phone}\n🎫Услуга: {usluga}\n📅День: {day}\n🕐Время:{time}\nℹ️Статус: {status}"
 
             markup = types.InlineKeyboardMarkup()
             markup.add(
@@ -95,7 +99,11 @@ def callback(call):
 # ---------------- ЗАЯВКА ----------------
 def get_name(message):
     user_data[message.chat.id] = {"name": message.text}
-    msg = bot.send_message(message.chat.id, "📞Введите телефона:")
+    msg = bot.send_message(
+        message.chat.id,
+        "📞Введите номер телефона\nНапример: <i>+79998887766</i>",
+        parse_mode="HTML",
+    )
     bot.register_next_step_handler(msg, get_phone)
 
 
@@ -191,7 +199,7 @@ def add_slot_bulk2(message):
                 database.add_slot(day, t)
                 added += 1
 
-        bot.send_message(ADMIN_ID, f"✅ Добавлено {added} окошек на {day}")
+        bot.send_message(ADMIN_ID, f"✅ Добавлено {times_list} окошек на {day}")
 
     except Exception as e:
         bot.send_message(

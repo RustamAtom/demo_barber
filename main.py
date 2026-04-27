@@ -9,6 +9,7 @@ ADMIN_ID = 5068250115  # поставь свой id
 
 bot = telebot.TeleBot(TOKEN)
 user_data = {}
+slots = {}
 
 
 # ---------------- START ----------------
@@ -29,7 +30,7 @@ def start(message):
 
 # ---------------- АДМИН ----------------
 def admin_menu():
-    markup = types.InlineKeyboardMarkup()
+    markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(
         types.InlineKeyboardButton("📅 Добавить слот", callback_data="add_slot"),
         types.InlineKeyboardButton("📝 Заявки", callback_data="list"),
@@ -84,9 +85,11 @@ def callback(call):
     # добавить слот
     elif call.data == "add_slot":
         msg = bot.send_message(
-            ADMIN_ID, "📅Введите дату\nНапример: <i>25.04</i>", parse_mode="HTML"
+            ADMIN_ID,
+            "📅Введите дату\nНапример: <i>25.04</i>\nФормат: <i>ДЕНЬ.МЕСЯЦ</i>",
+            parse_mode="HTML",
         )
-        bot.register_next_step_handler(msg, add_slot_bulk)
+        bot.register_next_step_handler(msg, add_slot_bulk1)
 
 
 # ---------------- ЗАЯВКА ----------------
@@ -158,15 +161,25 @@ def finish(message):
 
 
 # ---------------- ДОБАВЛЕНИЕ СЛОТОВ ----------------
-def add_slot_bulk(message):
+def add_slot_bulk1(message):
+    slots[message.chat.id]["day"] = message.text
+
+    msg = bot.send_message(
+        message.chat.id,
+        "🕰️Теперь введите свободные окошки через запятую\nНапример: <i>12:00, 13:15, 20:59</i>\nФормат: <i>ЧАСЫ:МИНУТЫ</i>",
+        parse_mode="HTML",
+    )
+    bot.register_next_step_handler(msg, add_slot_bulk2)
+
+
+def add_slot_bulk2(message):
     text = message.text.strip()
+    day = slots[message.chat.id]["day"]
 
     try:
         parts = text.split()
-        day = parts[0]  # 25.04
-        times = " ".join(parts[1:])  # всё остальное
 
-        times_list = [t.strip() for t in times.split(",")]
+        times_list = [t.strip() for t in parts.split(",")]
 
         added = 0
 

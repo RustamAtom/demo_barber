@@ -177,9 +177,7 @@ def add_slot_bulk2(message):
     day = slots[message.chat.id]["day"]
 
     try:
-        parts = text.split()
-
-        times_list = [t.strip() for t in parts.split(",")]
+        times_list = text.split(",")
 
         added = 0
 

@@ -191,15 +191,13 @@ def add_slot_bulk2(message):
 
     try:
         times_list = text.split(",")
-
-        added = 0
+        added = len(times_list)
 
         for t in times_list:
             if len(t) == 5 and ":" in t:
                 database.add_slot(day, t)
-                added += 1
 
-        bot.send_message(ADMIN_ID, f"✅ Добавлено {times_list} окошек на {day}")
+        bot.send_message(ADMIN_ID, f"✅ Добавлено {added} окошек на {day}")
 
     except Exception as e:
         bot.send_message(

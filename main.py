@@ -207,6 +207,6 @@ scheduler.add_job(clear_old, "interval", minutes=10)
 scheduler.start()
 
 # ---------------- ЗАПУСК ----------------
-if __name__ == "main":
+if __name__ == "__main__":
     print("Бот запущен")
     bot.polling(non_stop=True)

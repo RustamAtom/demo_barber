@@ -162,7 +162,12 @@ def finish(message):
 
 # ---------------- ДОБАВЛЕНИЕ СЛОТОВ ----------------
 def add_slot_bulk1(message):
-    slots[message.chat.id]["day"] = message.text
+    chat_id = message.chat.id
+
+    if chat_id not in slots:
+        slots[chat_id] = {}
+
+    slots[chat_id]["day"] = message.text.strip()
 
     msg = bot.send_message(
         message.chat.id,
